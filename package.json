@@ -1,0 +1,25 @@
+{
+  "name": "powermate2midi",
+  "version": "0.3.0",
+  "description": "Converts PowerMate input to MIDI. Sits in Mac menubar.",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npm install && ./node_modules/.bin/electron-rebuild .",
+    "start": "electron .",
+    "build": "rm -rf ./release-builds/powermate2midi-darwin-x64/ && electron-packager . powermate2midi --icon=powermate-128.icns --out=release-builds"
+  },
+  "author": "Brandon Keely",
+  "license": "MIT",
+  "dependencies": {
+    "auto-launch": "^5.0.1",
+    "menubar": "^5.2.3",
+    "midi": "^0.9.5",
+    "node-hid": "^0.5.4",
+    "node-osc": "^2.1.0",
+    "node-powermate": "0.0.5"
+  },
+  "devDependencies": {
+    "electron": "^1.6.11",
+    "electron-rebuild": "^1.5.11"
+  }
+}
