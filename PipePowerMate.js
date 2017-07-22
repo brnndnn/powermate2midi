@@ -8,40 +8,102 @@ var PipePowerMate = function(index, midiOut, oscOut, oscMin, oscMax){
   this.oscMin = oscMin || 0;
   this.oscMax = oscMax || 127;
   this.powerMate = new PowerMate(index);
-  this.curMidiValue = 0;
-  this.curOscValue = 0;
+  this.curMidiValueUp = 0;
+  this.curMidiValueDown = 0;
+  this.curOscValueUp = 0;
+  this.curOscValueDown = 0;
+
+  this.buttonDown = false;
 
   var self = this;
-  this.powerMate.on('wheelTurn', function(wheelDelta){
-    if(self.midiOut) self.midiWheelOut(wheelDelta);
-    if(self.oscOut) self.oscWheelOut(wheelDelta);
+  this.powerMate.on('buttonDown', ()=>{
+    this.buttonDown = true;
   });
+  this.powerMate.on('buttonUp', ()=>{
+    this.buttonDown = false;
+  });
+  this.powerMate.on('wheelTurn', (wheelDelta)=>{
+    if(this.buttonDown){
+      if(this.midiOut) {
+        console.log("[midi] down: "+wheelDelta);
+        this.midiWheelOutDown(wheelDelta);
+      }
+      if(this.oscOut){
+        console.log("[osc] down: "+wheelDelta);
+        this.oscWheelOutDown(wheelDelta);
+      }
+    } else {
+      if(this.midiOut) {
+        console.log("[midi] up: "+wheelDelta);
+        this.midiWheelOutUp(wheelDelta);
+      }
+      if(this.oscOut){
+        console.log("[osc] up: "+wheelDelta);
+        this.oscWheelOutUp(wheelDelta);
+      }
+    }
+  });
+  // this.powerMate.on('disconnected', function(){
+  //   console.log("disconnected");
+  //   // this.close();
+  // });
 };
 
 PipePowerMate.countPowerMate = function(){
   var devices = HID.devices();
   var count = 0;
-  for(var i=0,len=devices.length;i<len;i++){
-    if(devices[i].product === 'Griffin PowerMate') count++;
+  if(devices){
+    for(var i=0; i<devices.length; i++){
+      if(devices[i].product === 'Griffin PowerMate') count++;
+    }
   }
-
   return count;
 };
+PipePowerMate.notifyDevicesChanged = function(callback = ()=>{}, prevCount = 0){
+  var count = PipePowerMate.countPowerMate();
 
-PipePowerMate.prototype.midiWheelOut = function(value){
-  this.curMidiValue += value;
-  if(this.curMidiValue>127) this.curMidiValue=127;
-  if(this.curMidiValue<0) this.curMidiValue=0;
+  if(count != prevCount){
+    console.log("PowerMate devices changed");
+    callback();
+  }
 
-  //Send control change message
-  this.midiOut.sendMessage([176,this.channel,this.curMidiValue]);
+  setTimeout( () => { // this line should be changed to be more async
+    process.nextTick( () => { PipePowerMate.notifyDevicesChanged( callback, count ) } );
+  }, 100 );
 };
 
-PipePowerMate.prototype.oscWheelOut = function(value){
-  this.curOscValue += value;
-  if(this.curOscValue>this.oscMax) this.curOscValue=this.oscMax;
-  if(this.curOscValue<this.oscMin) this.curOscValue=this.oscMin;
-  this.oscOut.send('/pmWheelTurn', this.channel, this.curOscValue);
+
+PipePowerMate.prototype.midiWheelOutUp = function(value){
+  this.curMidiValueUp += value;
+  // TODO: option for forwarding relative rather than absolute values
+  if(this.curMidiValueUp>127) this.curMidiValueUp=127;
+  if(this.curMidiValueUp<0) this.curMidiValueUp=0;
+
+  //Send control change message
+  this.midiOut.sendMessage([176+this.channel,this.channel,this.curMidiValueUp]);
+};
+
+PipePowerMate.prototype.midiWheelOutDown = function(value){
+  this.curMidiValueDown += value;
+  // TODO: option for forwarding relative rather than absolute values
+  if(this.curMidiValueDown>127) this.curMidiValueDown=127;
+  if(this.curMidiValueDown<0) this.curMidiValueDown=0;
+
+  //Send control change message
+  this.midiOut.sendMessage([177+this.channel,this.channel,this.curMidiValueDown]);
+};
+
+PipePowerMate.prototype.oscWheelOutUp = function(value){
+  this.curOscValueUp += value;
+  if(this.curOscValueUp>this.oscMax) this.curOscValueUp=this.oscMax;
+  if(this.curOscValueUp<this.oscMin) this.curOscValueUp=this.oscMin;
+  this.oscOut.send('/pmWheelTurn', this.channel, this.curOscValueUp);
+};
+PipePowerMate.prototype.oscWheelOutDown = function(value){
+  this.curOscValueDown += value;
+  if(this.curOscValueDown>this.oscMax) this.curOscValueDown=this.oscMax;
+  if(this.curOscValueDown<this.oscMin) this.curOscValueDown=this.oscMin;
+  this.oscOut.send('/pmWheelDownTurn', this.channel, this.curOscValueDown);
 };
 
 PipePowerMate.prototype.close = function(value){
