@@ -10,6 +10,10 @@
   },
   "author": "Brandon Keely",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/brnndnn/powermate2midi.git"
+  },
   "dependencies": {
     "auto-launch": "^5.0.1",
     "menubar": "^5.2.3",
