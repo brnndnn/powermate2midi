@@ -9,7 +9,6 @@ ehthumbs.db
 Thumbs.db
 
 node_modules/
-release-builds/
 
 *.log
 pids
