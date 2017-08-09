@@ -1,7 +1,7 @@
 {
   "name": "powermate2midi",
-  "version": "0.3.0",
-  "description": "Converts PowerMate input to MIDI. Sits in Mac menubar.",
+  "version": "0.1.0",
+  "description": "Use a Griffin PowerMate to send MIDI events to your DAW.",
   "main": "index.js",
   "scripts": {
     "postinstall": "./node_modules/.bin/electron-rebuild .",
@@ -15,7 +15,6 @@
     "url": "git://github.com/brnndnn/powermate2midi.git"
   },
   "dependencies": {
-    "auto-launch": "^5.0.1",
     "menubar": "^5.2.3",
     "midi": "git+https://github.com/justinlatimer/node-midi.git",
     "node-hid": "^0.5.4",
